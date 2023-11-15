@@ -53,6 +53,8 @@ class CreatePaymentIntentAction implements ActionInterface, ApiAwareInterface
      */
     public function execute($request)
     {
+        // syslog(LOG_EMERG,"createPaymentIntentAction");
+        
         /** @var $request CreatePaymentIntent */
         RequestNotSupportedException::assertSupports($this, $request);
 
@@ -71,10 +73,11 @@ class CreatePaymentIntentAction implements ActionInterface, ApiAwareInterface
 
             $charge = PaymentIntent::create(array_merge($model->toUnsafeArrayWithoutLocal(), [
                 'confirmation_method' => 'manual',
-                'confirm' => true,
+                'confirm' => true
             ]));
 
             $model->replace($charge->__toArray(true));
+
         } catch (Base $e) {
             $model->replace($e->getJsonBody());
         }

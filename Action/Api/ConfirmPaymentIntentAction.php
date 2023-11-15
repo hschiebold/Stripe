@@ -53,6 +53,8 @@ class ConfirmPaymentIntentAction implements ActionInterface, ApiAwareInterface
      */
     public function execute($request)
     {
+        // syslog(LOG_EMERG,"confirmPaymentIntentAction");
+        
         /** @var $request ConfirmPaymentIntent */
         RequestNotSupportedException::assertSupports($this, $request);
 
@@ -66,9 +68,13 @@ class ConfirmPaymentIntentAction implements ActionInterface, ApiAwareInterface
             Stripe::setApiKey($this->keys->getSecretKey());
 
             $intent = PaymentIntent::retrieve($model['payment_intent']);
-            $intent->confirm();
+
+            if ($intent['status'] == 'requires_confirmation' || $intent['status'] == 'requires_action') {
+                $intent->confirm();
+            }
 
             $model->replace($intent->__toArray(true));
+
         } catch (Base $e) {
             $model->replace($e->getJsonBody());
         }
